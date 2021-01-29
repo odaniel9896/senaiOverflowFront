@@ -1,7 +1,7 @@
 import { Container, FormLogin, Header, Body, Button } from "./style"
 import Input from "../../components/input"
 
-function Login () {
+function Register () {
     return (
         <Container>
             <FormLogin>
@@ -10,19 +10,21 @@ function Login () {
                    BEM VINDO AO SENAI OVERFLOW
                 </h1>
                 <h2>
-                    O SEU PORTAL DE RESPOSTAS
+                   Informe os seus dados 
                 </h2>
                 </Header>
                 <Body>
                 <Input id="email" label="E-mail" type="email"/>
+                <Input id="nome" label="Nome" type="text"/>
+                <Input id="ra" label="Ra" type="text"/>
                 <Input id="password" label="Senha" type="password"/>
+                <Input id="valid-password" label="Revalide a senha" type="password"/>
                 <Button>
-                Entrar
+                Registrar
                 </Button>
-                <a href="#">Ou Registre-se </a>
                 </Body>  
             </FormLogin>
         </Container>
     )
 }
-export default Login
+export default Register
