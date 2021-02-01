@@ -1,5 +1,6 @@
 import { Container, FormLogin, Header, Body, Button } from "./style"
 import Input from "../../components/input"
+import { Link } from "react-router-dom"
 
 function Register () {
     return (
@@ -22,6 +23,7 @@ function Register () {
                 <Button>
                 Registrar
                 </Button>
+                <Link to = "/">Volta para a Raiz</Link>
                 </Body>  
             </FormLogin>
         </Container>

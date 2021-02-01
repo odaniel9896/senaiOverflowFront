@@ -1,6 +1,10 @@
-import { Container, Header, Content, ProfileContainer, FeedContainer, ActionContainer, QuestionCard } from "./styles";
+import { Container, Header, Content, ProfileContainer, FeedContainer, ActionContainer, QuestionCard, Logo, ItemSingout } from "./styles";
 
 import imgProfile from "../../assets/foto_perfil.png";
+
+import logo from "../../assets/logo.png";
+
+
 
 
 
@@ -33,7 +37,8 @@ function Home () {
     return (
         <Container>
             <Header>
-
+                <Logo src={logo}/>
+                <ItemSingout/>
             </Header>
             <Content>
                 <ProfileContainer>
@@ -52,7 +57,50 @@ function Home () {
                             <img src={imgProfile}/>
                         </section>
                         <footer>
-
+                            <h1>11 respostas</h1>
+                            <section>
+                                <header>
+                                <img src={imgProfile}/>
+                                <strong>Por Fulano</strong>
+                                <p>12/12/2012 as 12:12</p>
+                                </header>
+                                <p>resposta para a pergunta</p>
+                            </section>
+                            <form>
+                                <textarea
+                                placeholder="Responda essa duvida!" required>
+                                </textarea>
+                                <button>Enviar</button>
+                            </form>
+                        </footer>
+                    </QuestionCard>
+                    <QuestionCard>
+                        <header>
+                            <img src = {imgProfile}/>
+                            <strong>Por Pedrinho</strong>
+                            <p>Em 12/12/2012 as 12:12</p>
+                        </header>
+                        <section>
+                            <strong>Titulo</strong>
+                            <p>Descrição</p>
+                            <img src={imgProfile}/>
+                        </section>
+                        <footer>
+                            <h1>11 respostas</h1>
+                            <section>
+                                <header>
+                                <img src={imgProfile}/>
+                                <strong>Por Fulano</strong>
+                                <p>12/12/2012 as 12:12</p>
+                                </header>
+                                <p>resposta para a pergunta</p>
+                            </section>
+                            <form>
+                                <textarea
+                                placeholder="Responda essa duvida!" required>
+                                </textarea>
+                                <button>Enviar</button>
+                            </form>
                         </footer>
                     </QuestionCard>
                 </FeedContainer>
