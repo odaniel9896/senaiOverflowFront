@@ -3,6 +3,7 @@ import { Container, Header, Content, ProfileContainer, FeedContainer, ActionCont
 import imgProfile from "../../assets/foto_perfil.png";
 
 import logo from "../../assets/logo.png";
+import { useEffect } from "react";
 
 
 
@@ -34,6 +35,11 @@ function Profile () {
 }
 
 function Home () {
+
+    useEffect(() => {
+
+    }, {})
+
     return (
         <Container>
             <Header>
