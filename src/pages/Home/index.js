@@ -50,7 +50,7 @@ import {Container,Header,Content,ProfileContainer,FeedContainer,ActionsContainer
 
             const answerAdd = {
                 id: response.data.id,
-                description: addAnswer,
+                description: response.description,
                 created_at: response.data.createdAt,
                 Student : {
                     id: aluno.studentId,
@@ -59,7 +59,6 @@ import {Container,Header,Content,ProfileContainer,FeedContainer,ActionsContainer
             }
             setAnswers([...answers, answerAdd]);
 
-            setAddAnswer("")
            
             console.log(response.data)
             history.push("/home")
