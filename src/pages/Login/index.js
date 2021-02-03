@@ -19,7 +19,7 @@ function Login() {
     try {
       const response = await api.post("/sessions", login);
 
-      signIn(response.data)
+      signIn(response.data);
 
       console.log(response.data);
 

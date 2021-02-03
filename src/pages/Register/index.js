@@ -3,7 +3,7 @@ import Input from "../../components/input";
 import { Link, useHistory } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState } from "react";
-
+import Login from "../Login";
 
 function Register() {
   const history = useHistory();
