@@ -157,13 +157,13 @@ function Question({ question }) {
 }
 
 function NewQuestion () {
-
+  const [categories, setCategories] = useState([]);
   useEffect(() => {
-    const [categories, setCategories] = useState([]);
+   
 
-    const loadCategories = async() => {
+    const loadCategories = async () => {
       try {
-        const response = api.get("/categories");
+        const response = await api.get("/categories");
 
         setCategories(response.data)
       } catch (error) {
