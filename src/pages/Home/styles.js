@@ -155,6 +155,7 @@ export const Logo = styled.img`
 `;
 
 export const IconSignOut = styled(FaSignOutAlt)`
+
   font-size: 30px;
   cursor: pointer;
   transition: 0.2s;
@@ -163,3 +164,14 @@ export const IconSignOut = styled(FaSignOutAlt)`
     color: var(--dark);
   }
 `;
+
+export const FormNewQuestion = styled.form`
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  min-width: 300px;
+  width: 450px;
+  > div{
+    display:flex;
+  }
+`
