@@ -1,11 +1,11 @@
 
 import { TagComponent } from "./styles"
 
-function Tag ({info}) {
+function Tag ({info, handleClose}) {
     return (
         <TagComponent>
             {info}
-            <span>&times;</span> 
+            <span onClick={handleClose}>&times;</span> 
         </TagComponent>
     )
 }
