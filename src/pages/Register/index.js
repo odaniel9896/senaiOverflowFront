@@ -4,9 +4,12 @@ import { Link, useHistory } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState } from "react";
 import Login from "../Login";
+import Loading from "../../components/Loading";
 
 function Register() {
   const history = useHistory();
+
+  const [showRegister, setShowRegister] = useState(false);
 
   const [register, setRegister] = useState({
     ra: "",
@@ -25,9 +28,13 @@ function Register() {
 
     return false;
   };
-
+  {showRegister &&  (
+    <Loading/>
+)}
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    setShowRegister(true);
 
     try {
       const { ra, name, email, password } = register;
@@ -41,12 +48,15 @@ function Register() {
 
       console.log(response.data);
 
+      setShowRegister(false)
+
       history.push("/home");
 
       //Implementar a autorização
     } catch (error) {
       console.error(error);
       alert(error.response.data.error);
+      setShowRegister(false)
     }
   };
 
@@ -55,6 +65,10 @@ function Register() {
   };
 
   return (
+    <>
+        {showRegister && (
+      <Loading/>
+    )}
     <Container>
       <FormLogin onSubmit={handleSubmit}>
         <Header>
@@ -101,11 +115,12 @@ function Register() {
             value={register.confirmPassword}
             handler={handleInput}
           />
-          <Button disabled={buttonDisabled()}>Entrar</Button>
+          <Button disabled={buttonDisabled()} onClick={setShowRegister}>Entrar</Button>
           <Link to="/">Ou se ja tem cadastro clique aqui para entrar</Link>
         </Body>
       </FormLogin>
     </Container>
+    </>
   );
 }
 

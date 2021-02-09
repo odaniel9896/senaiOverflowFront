@@ -24,6 +24,7 @@ import { getUser, signOut } from "../../services/security";
 import Modal from "../../components/modal";
 import Select from "../../components/select";
 import Tag from "../../components/tag";
+import Loading from "../../components/Loading";
 
 function Profile() {
 
@@ -68,7 +69,7 @@ function Answer({ answer }) {
   );
 }
 
-function Question({ question }) {
+function Question({ question, setisLoading }) {
   const [showAnswers, setShowAnswers] = useState(false);
 
   const [newAnswer, setNewAnswer] = useState("");
@@ -86,9 +87,13 @@ function Question({ question }) {
   const handleAddAnswer = async (e) => {
     e.preventDefault();
 
+    setisLoading(true)
+    
+
     if (newAnswer.length < 10)
       return alert("A resposta deve ter no mínimo 10 caracteres");
 
+   
     try {
       const response = await api.post(`/questions/${question.id}/answer`, {
         description: newAnswer,
@@ -106,16 +111,22 @@ function Question({ question }) {
         },
       };
 
+      setisLoading(false)
+
       setAnswers([...answers, answerAdded]);
 
       setNewAnswer("");
     } catch (error) {
       alert(error);
+      setisLoading(false)
     }
   };
 
   return (
-    <QuestionCard>
+    <>
+
+    
+       <QuestionCard>
       <header>
         <img src={imgProfile} ALT="imagem do perfil"/>
         <strong>Por{" "}
@@ -157,10 +168,11 @@ function Question({ question }) {
         </form>
       </footer>
     </QuestionCard>
+    </>
   );
 }
 
-function NewQuestion ({handleReload}) {
+function NewQuestion ({handleReload, setisLoading}) {
   const [categories, setCategories] = useState([]);
 
   const [categoriesSel, setCategoriesSel] = useState([]);
@@ -170,6 +182,7 @@ function NewQuestion ({handleReload}) {
   const imageRef = useRef()
   
   const categoriesRef = useRef()
+
 
   const [newQuestion, setNewQuestion] = useState({
     title: "",
@@ -235,6 +248,7 @@ function NewQuestion ({handleReload}) {
     if(image) data.append("image", image)
     if(newQuestion.gist) data.append("gist", newQuestion.gist);
 
+    setisLoading(true)
     try {
         await api.post("questions", data, {
           headers: {
@@ -244,9 +258,9 @@ function NewQuestion ({handleReload}) {
         handleReload();
     } catch (error) {
       alert(error)
+      setisLoading(false)
     }
   }
-
   const handleUnselCategory= (idUnsel) => {
     setCategoriesSel(categoriesSel.filter(c => c.id  !== idUnsel))
 
@@ -261,6 +275,8 @@ function NewQuestion ({handleReload}) {
   };
 
   return (
+    <>
+
     <FormNewQuestion onSubmit={handleAddNewQuestion}>
         <Input id="title" label="Titulo" value={newQuestion.title} handler={handleInput}/>
         <Input id="description" label="description" value={newQuestion.description} handler={handleInput}/>
@@ -277,8 +293,11 @@ function NewQuestion ({handleReload}) {
         </div>
         <input type="file" onChange={handleImage}/>
         <img alt="imageVisualization" ref={imageRef}/>
-        <button>Enviar</button>
+        
+              <button>Enviar</button>
+  
     </FormNewQuestion>
+    </>
   )
 }
 
@@ -288,13 +307,18 @@ function Home() {
   const [questions, setQuestions] = useState([]);
 
   const [reload, setReload] = useState(null)
+
+  const [isLoading, setisLoading] = useState(false)
+
   const [showNewQuestion, setShowNewQuestion] = useState(false)
 
   useEffect(() => {
     const loadQuestions = async () => {
+      setisLoading(true)
       const response = await api.get("/feed");
 
       setQuestions(response.data);
+      setisLoading(false)
     };
 
     loadQuestions();
@@ -309,16 +333,21 @@ function Home() {
   const handleReload = () => {
     setShowNewQuestion(false)
     setReload(Math.random())
-  } 
+  }
 
   return (
     <> 
+    {isLoading && <Loading/>}
+    
     {showNewQuestion && (
+      //PASSANDO O SETISLOADING PARA O FILHO
       <Modal title="Faça uma pergunta" handleClose={() => setShowNewQuestion(false)}>
-      <NewQuestion handleReload={handleReload}/>
+      <NewQuestion handleReload={handleReload} setisLoading={setisLoading}/>
 
       </Modal>
     )}
+  
+    
       <Container>
       <Header>
         <Logo src={logo} onclick={handleReload}/>
@@ -330,11 +359,13 @@ function Home() {
         </ProfileContainer>
         <FeedContainer>
           {questions.map((q) => (
-            <Question question={q} />
+            <Question question={q} setisLoading={setisLoading}/>
           ))}
         </FeedContainer>
+        
         <ActionsContainer>
-          <button onClick={() => setShowNewQuestion(true)}>Fazer uma pergunta</button>
+        <button onClick={() => setShowNewQuestion(true)}>Fazer uma pergunta</button>
+          
         </ActionsContainer>
       </Content>
     </Container>
