@@ -40,9 +40,19 @@ export const ProfileContainer = styled.div`
     flex-direction: column;
     gap: 4px;
   }
+  input[type="file"] {
+    display:none;
+  }
   img {
     width: 35%;
     border-radius: 50%;
+  }
+  label {
+    cursor: pointer;
+    text-decoration: underline;
+    :hover {
+      color: var(--primary)
+    }
   }
 `;
 
