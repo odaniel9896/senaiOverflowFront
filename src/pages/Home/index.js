@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
+import ReactEmbedGist from "react-embed-gist";
 import {
   Container,
   Header,
@@ -11,9 +12,13 @@ import {
   Logo,
   IconSignOut,
   FormNewQuestion,
+  GistIcon,
+  ContainerGist,
+  SearchBox,
 } from "./styles";
 
 import { format } from "date-fns";
+import SearchField from "react-search-field"
 
 import Input from "../../components/input";
 
@@ -26,6 +31,8 @@ import Select from "../../components/select";
 import Tag from "../../components/tag";
 import Loading from "../../components/Loading";
 import { validSquaredImage } from "../../utils";
+import { FaGithub } from "react-icons/fa";
+
 
 function Profile({setisLoading, handleReload}) {
 
@@ -71,7 +78,7 @@ function Profile({setisLoading, handleReload}) {
   return (
     <>
       <section>
-        <img src={student.image || imgProfile} alt="Imagem de Perfil" />
+        <img src={student.image || imgProfile} alt="Imagem de Perfil"/>
         <label htmlFor="editImageProfile">Editar Foto</label>
         <input id="editImageProfile" type="file" onChange={handleImage}/>
       </section>
@@ -108,7 +115,7 @@ function Answer({ answer }) {
   );
 }
 
-function Question({ question, setisLoading }) {
+function Question({ question, setisLoading, setCurrentGist }) {
   const [showAnswers, setShowAnswers] = useState(false);
 
   const [newAnswer, setNewAnswer] = useState("");
@@ -125,10 +132,9 @@ function Question({ question, setisLoading }) {
 
   const handleAddAnswer = async (e) => {
     e.preventDefault();
-
+    
     setisLoading(true)
     
-
     if (newAnswer.length < 10)
       return alert("A resposta deve ter no mínimo 10 caracteres");
 
@@ -171,7 +177,9 @@ function Question({ question, setisLoading }) {
         <img src={question.Student.image || imgProfile} ALT="imagem do perfil"/>
         <strong>Por{" "}
           {student.studentId === question.Student.id ? "Você" : question.Student.name}</strong>
-        <p>em {format(new Date(question.created_at), "dd/MM/yyyy 'AS' HH:mm")}</p>
+        <p>em {format(new Date(question.created_at), "dd/MM/yyyy 'AS' HH:mm")}
+        </p>
+        {question.gist  && <GistIcon onClick={() => setCurrentGist(question.gist)}/>}
       </header>
       <section>
         <strong>{question.title}</strong>
@@ -340,6 +348,23 @@ function NewQuestion ({handleReload, setisLoading}) {
     </>
   )
 }
+function Gist ({gist, handleClose}) {
+  if(gist) {
+    const formatedGist = gist.split(".com/").pop();
+    return (
+    <Modal title="Exemplo de codigo" handleClose={() => handleClose(undefined)}>
+      <ContainerGist>
+        <ReactEmbedGist gist={formatedGist}/>
+      </ContainerGist>
+      
+    </Modal>
+
+  )
+  }
+  
+  else return null   
+}
+
 
 function Home() {
   const history = useHistory();
@@ -349,6 +374,8 @@ function Home() {
   const [reload, setReload] = useState(null)
 
   const [isLoading, setisLoading] = useState(false)
+
+  const [currentGist, setCurrentGist] = useState(undefined)
 
   const [showNewQuestion, setShowNewQuestion] = useState(false)
 
@@ -378,6 +405,9 @@ function Home() {
   return (
     <> 
     {isLoading && <Loading/>}
+    {
+        <Gist gist={currentGist} handleClose={setCurrentGist}/>  
+    }
     
     {showNewQuestion && (
       //PASSANDO O SETISLOADING PARA O FILHO
@@ -391,6 +421,8 @@ function Home() {
       <Container>
       <Header>
         <Logo src={logo} onclick={handleReload}/>
+        <SearchBox placeholder="Pesquisar"> 
+        </SearchBox>
         <IconSignOut onClick={handleSignOut} />
       </Header>
       <Content>
@@ -399,7 +431,7 @@ function Home() {
         </ProfileContainer>
         <FeedContainer>
           {questions.map((q) => (
-            <Question question={q} setisLoading={setisLoading}/>
+            <Question question={q} setisLoading={setisLoading} setCurrentGist={setCurrentGist}/>
           ))}
         </FeedContainer>
         

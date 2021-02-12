@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { FaSignOutAlt } from "react-icons/fa";
+import { FaSignOutAlt, FaGithub } from "react-icons/fa";
+import SearchField from "react-search-field"
 
 export const Container = styled.div`
   width: 100vw;
@@ -189,5 +190,38 @@ export const FormNewQuestion = styled.form`
     align-self: center;
     max-width: 40%;
     display: none;
+  }
+`
+export const GistIcon = styled(FaGithub) `
+  font-size: 30px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: .2s;
+
+  :hover {
+    color: var(--primary)
+  }
+  :active {
+    transform: scale(0.9);
+
+  }
+`
+export const ContainerGist = styled.section `
+  margin-top: 10px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: normal;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+`
+export const SearchBox = styled(SearchField) `
+  width: 400px;
+  background-color: blue;
+
+  .react-search-field-input {
+    outline: none;
+    width: 250px;
   }
 `
