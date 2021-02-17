@@ -14,11 +14,11 @@ import {
   FormNewQuestion,
   GistIcon,
   ContainerGist,
-  SearchBox,
+  FormSearch
 } from "./styles";
 
 import { format } from "date-fns";
-import SearchField from "react-search-field"
+import SearchBar from "../../components/SearchIcon";
 
 import Input from "../../components/input";
 
@@ -115,7 +115,7 @@ function Answer({ answer }) {
   );
 }
 
-function Question({ question, setisLoading, setCurrentGist }) {
+function Question({ question, setisLoading, setCurrentGist, setShowSearch, handleSearch }) {
   const [showAnswers, setShowAnswers] = useState(false);
 
   const [newAnswer, setNewAnswer] = useState("");
@@ -170,52 +170,56 @@ function Question({ question, setisLoading, setCurrentGist }) {
 
   return (
     <>
-
+        
+      <QuestionCard>
+        <header>
+          <img src={question.Student.image || imgProfile} ALT="imagem do perfil"/>
     
-       <QuestionCard>
-      <header>
-        <img src={question.Student.image || imgProfile} ALT="imagem do perfil"/>
-        <strong>Por{" "}
-          {student.studentId === question.Student.id ? "Você" : question.Student.name}</strong>
-        <p>em {format(new Date(question.created_at), "dd/MM/yyyy 'AS' HH:mm")}
-        </p>
-        {question.gist  && <GistIcon onClick={() => setCurrentGist(question.gist)}/>}
-      </header>
-      <section>
-        <strong>{question.title}</strong>
-        <p>{question.description}</p>
-        <img src={question.image} />
-      </section>
-      <footer>
-        <h1 onClick={() => setShowAnswers(!showAnswers)}>
-          {qtdAnswers === 0 ? (
-            "Seja o primeiro a responder"
-          ) : (
+          <strong>Por{" "}
+            {student.studentId === question.Student.id ? "Você" : question.Student.name}</strong>
+          <p>em {format(new Date(question.created_at), "dd/MM/yyyy 'AS' HH:mm")}
+          </p>
+          {question.gist  && <GistIcon onClick={() => setCurrentGist(question.gist)}/>}
+        </header>
+        <section>
+          <strong>{question.title}</strong>
+          <p>{question.description}</p>
+          <img src={question.image} />
+        </section>
+        <footer>
+          <h1 onClick={() => setShowAnswers(!showAnswers)}>
+            {qtdAnswers === 0 ? (
+              "Seja o primeiro a responder"
+            ) : (
+              <>
+                {qtdAnswers}
+                {qtdAnswers > 1 ? " Respostas" : " Resposta"}
+              </>
+            )}
+          </h1>
+          {showAnswers && (
             <>
-              {qtdAnswers}
-              {qtdAnswers > 1 ? " Respostas" : " Resposta"}
+              {answers.map((answer) => (
+                <Answer answer={answer} />
+              ))}
             </>
           )}
-        </h1>
-        {showAnswers && (
-          <>
-            {answers.map((answer) => (
-              <Answer answer={answer} />
-            ))}
-          </>
-        )}
-        <form onSubmit={handleAddAnswer}>
-          <textarea
-            minLength={10}
-            placeholder="Responda essa dúvida!"
-            onChange={(e) => setNewAnswer(e.target.value)}
-            required
-            value={newAnswer}
-          ></textarea>
-          <button>Enviar</button>
-        </form>
-      </footer>
-    </QuestionCard>
+          <form onSubmit={handleAddAnswer}>
+            <textarea
+              minLength={10}
+              placeholder="Responda essa dúvida!"
+              onChange={(e) => setNewAnswer(e.target.value)}
+              required
+              value={newAnswer}
+            ></textarea>
+            <button>Enviar</button>
+          </form>
+        </footer>
+      </QuestionCard>
+    
+
+  
+       
     </>
   );
 }
@@ -375,17 +379,32 @@ function Home() {
 
   const [isLoading, setisLoading] = useState(false)
 
+  const [searchFeed, setSearchFeed] = useState({
+    search: "",
+  })
+
+  const [showSearch, setShowSearch] = useState(true)
+  
   const [currentGist, setCurrentGist] = useState(undefined)
 
   const [showNewQuestion, setShowNewQuestion] = useState(false)
 
-  useEffect(() => {
+ 
+
+
+  useEffect((handleSearch) => {
     const loadQuestions = async () => {
       setisLoading(true)
-      const response = await api.get("/feed");
 
-      setQuestions(response.data);
-      setisLoading(false)
+      if(searchFeed.search === "") {
+        const response = await api.get("/feed");
+        setQuestions(response.data);  
+        setisLoading(false) 
+      }
+      else {
+        handleSearch()
+      }
+      
     };
 
     loadQuestions();
@@ -401,6 +420,25 @@ function Home() {
     setShowNewQuestion(false)
     setReload(Math.random())
   }
+
+  const handleSearch = async (e) => {
+    e.preventDefault()
+      // setIsLoading(true);
+      try {
+
+        const response = await api.post("/search", searchFeed);
+
+        console.log(response.data);
+        
+      } catch (error) {
+        alert(error);
+      }
+  };
+  const handleInputSearch = (e) => {
+    setSearchFeed({ ...searchFeed, [e.target.id]: e.target.value})
+  }
+
+  
 
   return (
     <> 
@@ -421,20 +459,23 @@ function Home() {
       <Container>
       <Header>
         <Logo src={logo} onclick={handleReload}/>
-        <SearchBox placeholder="Pesquisar"> 
-        </SearchBox>
+          <FormSearch onSubmit={handleSearch}>
+            <SearchBar id="search" label="pesquisar" handler={handleInputSearch} required valur={searchFeed.search}/>
+          </FormSearch>
         <IconSignOut onClick={handleSignOut} />
       </Header>
       <Content>
         <ProfileContainer>
           <Profile handleReload={handleReload} setisLoading={setisLoading}/>
         </ProfileContainer>
-        <FeedContainer>
-          {questions.map((q) => (
-            <Question question={q} setisLoading={setisLoading} setCurrentGist={setCurrentGist}/>
-          ))}
-        </FeedContainer>
         
+          <FeedContainer>
+             {questions.map((q) => (
+               <Question question={q} setisLoading={setisLoading} setCurrentGist={setCurrentGist}/>
+             ))}
+          </FeedContainer>
+      
+
         <ActionsContainer>
         <button onClick={() => setShowNewQuestion(true)}>Fazer uma pergunta</button>
           

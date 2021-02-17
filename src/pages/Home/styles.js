@@ -216,12 +216,51 @@ export const ContainerGist = styled.section `
     margin-bottom: 5px;
   }
 `
-export const SearchBox = styled(SearchField) `
-  width: 400px;
-  background-color: blue;
 
-  .react-search-field-input {
-    outline: none;
-    width: 250px;
+export const FormSearch = styled.form`
+  position: relative;
+  margin-top: 10px;
+  display: flex;
+  > input {
+    min-width: 320px;
+    max-width: 400px;
+    border: 0;
+    padding-left: 10px;
+    border-radius: 20px;
+    background-color: var(--darkGray);
+    font-family: sans-serif;
+    color: white;
+    
   }
-`
+  >button{
+    min-width: 100px;
+    max-width: 80px;
+    border-radius: 20px;
+    
+    margin-bottom: 10px;
+    margin-left:2px;
+  }
+  > label {
+    cursor: text;
+    position: absolute;
+    top: 0;
+    left: 10px;
+    color: var(--darkGray);
+    display: flex;
+    align-items: center;
+  }
+  > input,
+  > label {
+    width: 100%;
+    height: 30px;
+    font-size: 16px;
+    transition: 0.2s ease-in-out;
+  }
+  > input:not(:placeholder-shown) + label,
+  > input:focus + label {
+    left: 0;
+    font-size: 14px;
+    color: var(--light);
+    top: -25px;
+  }
+`;
