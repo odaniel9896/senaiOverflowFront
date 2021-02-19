@@ -1,5 +1,5 @@
-import { api } from "./api";
 import jwtDecode from "jwt-decode";
+import { api } from "./api";
 
 const USER_KEY = "@user";
 
@@ -23,27 +23,26 @@ export const getUser = () => {
 };
 
 export const setUser = (student) => {
-  const user = JSON.parse(localStorage.getItem(USER_KEY))
+  const user = JSON.parse(localStorage.getItem(USER_KEY));
 
   user.student = student;
 
-  localStorage.setItem(USER_KEY, JSON.stringify(user))
-}
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+};
 
 export const isSignedIn = () => {
   const user = JSON.parse(localStorage.getItem(USER_KEY));
 
   if (user && user.token) {
-    const jwtDecoded = jwtDecode(user.token)
-    //O PIPE 0 TIRA AS CASAS DECIMAIS
-    const nowTime = Date.now() / 1000 | 0;
+    const jwtDecoded = jwtDecode(user.token);
 
-    if(jwtDecoded.exp <  nowTime) {
-      return signOut()
+    const nowTime = (Date.now() / 1000) | 0;
+
+    if (jwtDecoded.exp < nowTime) {
+      return signOut();
     }
-    //verificar se o token é válido
-    api.defaults.headers.common["Authorization"] = `Bearer ${user.token}`;
 
+    api.defaults.headers.common["Authorization"] = `Bearer ${user.token}`;
     return true;
   }
 

@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router-dom";
+import { format } from "date-fns";
 import ReactEmbedGist from "react-embed-gist";
 import {
   Container,
@@ -14,66 +15,55 @@ import {
   FormNewQuestion,
   GistIcon,
   ContainerGist,
-  FormSearch
 } from "./styles";
 
-import { format } from "date-fns";
-import SearchBar from "../../components/SearchIcon";
-
-import Input from "../../components/input";
-
+import Input from "../../components/Input";
 import imgProfile from "../../assets/foto_perfil.png";
 import logo from "../../assets/logo.png";
 import { api } from "../../services/api";
-import { getUser, signOut, setUser } from "../../services/security";
-import Modal from "../../components/modal";
-import Select from "../../components/select";
-import Tag from "../../components/tag";
+import { getUser, setUser, signOut } from "../../services/security";
+import Modal from "../../components/Modal";
+import Select from "../../components/Select";
+import Tag from "../../components/Tag";
 import Loading from "../../components/Loading";
 import { validSquaredImage } from "../../utils";
-import { FaGithub } from "react-icons/fa";
+import {
+  FaGithub,
+  FaGithubAlt,
+  FaGithubSquare,
+  FaReacteurope,
+} from "react-icons/fa";
+import SpinnerLoading from "../../components/SpinnerLoading";
+import InputSearch from "../../components/InputSearch";
 
-
-function Profile({ setisLoading, handleReload }) {
-
-  const [student, setStudent] = useState({});
-
-  useEffect(() => {
-    setStudent(getUser())
-  }, [])
-
+function Profile({ setIsLoading, handleReload, setMessage }) {
+  const [student, setStudent] = useState(getUser());
 
   const handleImage = async (e) => {
-
     if (!e.target.files[0]) return;
 
-
-
     try {
+      await validSquaredImage(e.target.files[0]);
 
       const data = new FormData();
 
-      await validSquaredImage(e.target.files[0])
+      data.append("image", e.target.files[0]);
 
-      data.append("image", e.target.files[0])
-
-      setisLoading(true)
+      setIsLoading(true);
 
       const response = await api.post(`/students/${student.id}/images`, data);
 
       setTimeout(() => {
-        setStudent({ ...student, image: response.data.image })
-        handleReload()
+        setStudent({ ...student, image: response.data.image });
+        handleReload();
       }, 1000);
 
-      setUser({ ...student, image: response.data.image })
-
-
+      setUser({ ...student, image: response.data.image });
     } catch (error) {
-      alert(error)
-      setisLoading(false)
+      alert(error);
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -99,23 +89,26 @@ function Profile({ setisLoading, handleReload }) {
 }
 
 function Answer({ answer }) {
-
   const student = getUser();
 
   return (
     <section>
       <header>
-        <img src={answer.Student.image || imgProfile} />
-        <strong>Por{" "}
-          {student.studentId === answer.Student.id ? "Você" : answer.Student.name}</strong>
-        <p> {format(new Date(answer.created_at), "dd/MM/yyyy 'AS' HH:mm")}</p>
+        <img src={answer.Student.image || imgProfile} alt="Imagem de Perfil" />
+        <strong>
+          por{" "}
+          {student.studentId === answer.Student.id
+            ? "Você"
+            : answer.Student.name}
+        </strong>
+        <p> {format(new Date(answer.created_at), "dd/MM/yyyy 'às' HH:mm")}</p>
       </header>
       <p>{answer.description}</p>
     </section>
   );
 }
 
-function Question({ question, setisLoading, setCurrentGist, setShowSearch, handleSearch }) {
+function Question({ question, setIsLoading, setCurrentGist }) {
   const [showAnswers, setShowAnswers] = useState(false);
 
   const [newAnswer, setNewAnswer] = useState("");
@@ -123,24 +116,21 @@ function Question({ question, setisLoading, setCurrentGist, setShowSearch, handl
   const [answers, setAnswers] = useState([]);
 
   useEffect(() => {
-    setAnswers(question.Answers)
-  }, [question.Answers])
+    setAnswers(question.Answers);
+  }, [question.Answers]);
 
   const qtdAnswers = answers.length;
-
-  const student = getUser();
 
   const handleAddAnswer = async (e) => {
     e.preventDefault();
 
-    setisLoading(true)
-
     if (newAnswer.length < 10)
       return alert("A resposta deve ter no mínimo 10 caracteres");
 
+    setIsLoading(true);
 
     try {
-      const response = await api.post(`/questions/${question.id}/answer`, {
+      const response = await api.post(`/questions/${question.id}/answers`, {
         description: newAnswer,
       });
 
@@ -153,105 +143,106 @@ function Question({ question, setisLoading, setCurrentGist, setShowSearch, handl
         Student: {
           id: aluno.studentId,
           name: aluno.name,
-          image: aluno.image
+          image: aluno.image,
         },
       };
-
-      setisLoading(false)
 
       setAnswers([...answers, answerAdded]);
 
       setNewAnswer("");
+
+      setIsLoading(false);
     } catch (error) {
       alert(error);
-      setisLoading(false)
+      setIsLoading(false);
     }
   };
 
+  const student = getUser();
+
   return (
-    <>
-
-      <QuestionCard>
-        <header>
-          <img src={question.Student.image || imgProfile} ALT="imagem do perfil" />
-
-          <strong>Por{" "}
-            {student.studentId === question.Student.id ? "Você" : question.Student.name}</strong>
-          <p>em {format(new Date(question.created_at), "dd/MM/yyyy 'AS' HH:mm")}
-          </p>
-          {question.gist && <GistIcon onClick={() => setCurrentGist(question.gist)} />}
-        </header>
-        <section>
-          <strong>{question.title}</strong>
-          <p>{question.description}</p>
-          <img src={question.image} />
-        </section>
-        <footer>
-          <h1 onClick={() => setShowAnswers(!showAnswers)}>
-            {qtdAnswers === 0 ? (
-              "Seja o primeiro a responder"
-            ) : (
-                <>
-                  {qtdAnswers}
-                  {qtdAnswers > 1 ? " Respostas" : " Resposta"}
-                </>
-              )}
-          </h1>
-          {showAnswers && (
+    <QuestionCard>
+      <header>
+        <img
+          src={question.Student.image || imgProfile}
+          alt="Imagem de perfil"
+        />
+        <strong>
+          por{" "}
+          {student.studentId === question.Student.id
+            ? "Você"
+            : question.Student.name}
+        </strong>
+        <p>
+          em {format(new Date(question.created_at), "dd/MM/yyyy 'às' HH:mm")}
+        </p>
+        {question.gist && (
+          <GistIcon onClick={() => setCurrentGist(question.gist)} />
+        )}
+      </header>
+      <section>
+        <strong>{question.title}</strong>
+        <p>{question.description}</p>
+        {question.image && <img src={question.image} alt="Imagem da questão" />}
+      </section>
+      <footer>
+        <h1 onClick={() => setShowAnswers(!showAnswers)}>
+          {qtdAnswers === 0 ? (
+            "Seja o primeiro a responder"
+          ) : (
             <>
-              {answers.map((answer) => (
-                <Answer answer={answer} />
-              ))}
+              {qtdAnswers}
+              {qtdAnswers > 1 ? " Respostas" : " Resposta"}
             </>
           )}
-          <form onSubmit={handleAddAnswer}>
-            <textarea
-              minLength={10}
-              placeholder="Responda essa dúvida!"
-              onChange={(e) => setNewAnswer(e.target.value)}
-              required
-              value={newAnswer}
-            ></textarea>
-            <button>Enviar</button>
-          </form>
-        </footer>
-      </QuestionCard>
-
-
-
-
-    </>
+        </h1>
+        {showAnswers && (
+          <>
+            {answers.map((answer) => (
+              <Answer key={answer.id} answer={answer} />
+            ))}
+          </>
+        )}
+        <form onSubmit={handleAddAnswer}>
+          <textarea
+            minLength={10}
+            placeholder="Responda essa dúvida!"
+            onChange={(e) => setNewAnswer(e.target.value)}
+            required
+            value={newAnswer}
+          />
+          <button>Enviar</button>
+        </form>
+      </footer>
+    </QuestionCard>
   );
 }
 
-function NewQuestion({ handleReload, setisLoading }) {
-  const [categories, setCategories] = useState([]);
-
-  const [categoriesSel, setCategoriesSel] = useState([]);
-
-  const [image, setImage] = useState(null)
-
-  const imageRef = useRef()
-
-  const categoriesRef = useRef()
-
-
+function NewQuestion({ handleReload, setIsLoading }) {
   const [newQuestion, setNewQuestion] = useState({
     title: "",
     description: "",
     gist: "",
-  })
+  });
 
+  const [categories, setCategories] = useState([]);
+
+  const [categoriesSel, setCategoriesSel] = useState([]);
+
+  const [image, setImage] = useState(null);
+
+  const imageRef = useRef();
+
+  const categoriesRef = useRef();
 
   useEffect(() => {
-
-
     const loadCategories = async () => {
       try {
         const response = await api.get("/categories");
-        setCategories(response.data)
+
+        setCategories(response.data);
       } catch (error) {
-        alert(error)
+        alert(error);
       }
     };
 
@@ -259,174 +250,191 @@ function NewQuestion({ handleReload, setisLoading }) {
   }, []);
 
   const handleCategories = (e) => {
-    //console.log(e.target.value) Retorna o valor selecionado
-
     const idSel = e.target.value;
-    //Verificando se a categorysel tem o mesmo id da idSel
-    const categorySel = categories.find(c => c.id == idSel);
+
+    const categorySel = categories.find((c) => c.id.toString() === idSel);
 
     if (categorySel && !categoriesSel.includes(categorySel))
-      setCategoriesSel([...categoriesSel, categorySel])
+      setCategoriesSel([...categoriesSel, categorySel]);
 
     e.target[e.target.selectedIndex].disabled = true;
     e.target.value = "";
-  }
-  //RETIRA A IMAGEM DA POSIITON 0, PQ É A PRIMEIRA IMAGEM SELECIONADA
+  };
+
   const handleImage = (e) => {
     if (e.target.files[0]) {
-      imageRef.current.src = URL.createObjectURL(e.target.files[0])
+      imageRef.current.src = URL.createObjectURL(e.target.files[0]);
       imageRef.current.style.display = "flex";
-    }
-    else {
+    } else {
       imageRef.current.src = "";
-      imageRef.current.style.display = "none"
+      imageRef.current.style.display = "none";
     }
 
+    setImage(e.target.files[0]);
+  };
 
-    setImage(e.target.files[0])
-  }
+  const handleUnselCategory = (idUnsel) => {
+    setCategoriesSel(categoriesSel.filter((c) => c.id !== idUnsel));
+
+    const { options } = categoriesRef.current;
+
+    for (var i = 0; i < options.length; i++) {
+      if (options[i].value === idUnsel.toString()) options[i].disabled = false;
+    }
+  };
+
+  const handleInput = (e) => {
+    setNewQuestion({ ...newQuestion, [e.target.id]: e.target.value });
+  };
+
   const handleAddNewQuestion = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const data = new FormData();
 
     data.append("title", newQuestion.title);
     data.append("description", newQuestion.description);
 
-
     const categories = categoriesSel.reduce((s, c) => (s += c.id + ","), "");
+
     data.append("categories", categories.substr(0, categories.length - 1));
 
-    if (image) data.append("image", image)
+    if (image) data.append("image", image);
     if (newQuestion.gist) data.append("gist", newQuestion.gist);
 
-    setisLoading(true)
+    setIsLoading(true);
+
     try {
-      await api.post("questions", data, {
+      await api.post("/questions", data, {
         headers: {
-          "Content-type": "multipart/form-data"
+          "Content-type": "multipart/form-data",
         },
       });
+
       handleReload();
     } catch (error) {
-      alert(error)
-      setisLoading(false)
+      alert(error);
+      setIsLoading(false);
     }
-  }
-  const handleUnselCategory = (idUnsel) => {
-    setCategoriesSel(categoriesSel.filter(c => c.id !== idUnsel))
-
-    const { options } = categoriesRef.current;
-
-    for (var i = 0; i < options.length; i++) {
-      if (options[i].value === idUnsel.toString()) options[i].disabled = false
-    }
-  }
-  const handleInput = (e) => {
-    setNewQuestion({ ...newQuestion, [e.target.id]: e.target.value });
   };
 
   return (
-    <>
-
-      <FormNewQuestion onSubmit={handleAddNewQuestion}>
-        <Input id="title" label="Titulo" value={newQuestion.title} handler={handleInput} />
-        <Input id="description" label="description" value={newQuestion.description} handler={handleInput} />
-        <Input id="gist" label="gist" value={newQuestion.gist} handler={handleInput} />
-        <Select id="categories" label="Categorias" handler={handleCategories} ref={categoriesRef}>
-          <option value="">Selecione</option>
-          {categories.map((c) => (
-            <option value={c.id} >{c.description}</option>
-          ))}
-        </Select>
-        <div>
-          {categoriesSel.map((c) => (<Tag key={c.id} info={c.description} handleClose={() => handleUnselCategory(c.id)}></Tag>))}
-
-        </div>
-        <input type="file" onChange={handleImage} />
-        <img alt="imageVisualization" ref={imageRef} />
-
-        <button>Enviar</button>
-
-      </FormNewQuestion>
-    </>
-  )
+    <FormNewQuestion onSubmit={handleAddNewQuestion}>
+      <Input
+        id="title"
+        label="Título"
+        value={newQuestion.title}
+        handler={handleInput}
+        required
+      />
+      <Input
+        id="description"
+        label="Descrição"
+        value={newQuestion.description}
+        handler={handleInput}
+        required
+      />
+      <Input
+        id="gist"
+        label="Gist"
+        value={newQuestion.gist}
+        handler={handleInput}
+      />
+      <Select
+        id="categories"
+        label="Categorias"
+        handler={handleCategories}
+        ref={categoriesRef}
+      >
+        <option value="">Selecione</option>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.description}
+          </option>
+        ))}
+      </Select>
+      <div>
+        {categoriesSel.map((c) => (
+          <Tag
+            key={c.id}
+            info={c.description}
+            handleClose={() => handleUnselCategory(c.id)}
+          ></Tag>
+        ))}
+      </div>
+      <input type="file" onChange={handleImage} />
+      <img alt="Pré-visualização" ref={imageRef} />
+      <button>Enviar</button>
+    </FormNewQuestion>
+  );
 }
+
 function Gist({ gist, handleClose }) {
   if (gist) {
     const formatedGist = gist.split(".com/").pop();
     return (
-      <Modal title="Exemplo de codigo" handleClose={() => handleClose(undefined)}>
+      <Modal
+        title="Exemplo de código"
+        handleClose={() => handleClose(undefined)}
+      >
         <ContainerGist>
           <ReactEmbedGist gist={formatedGist} />
         </ContainerGist>
-
       </Modal>
-
-    )
-  }
-
-  else return null
+    );
+  } else return null;
 }
-
 
 function Home() {
   const history = useHistory();
 
   const [questions, setQuestions] = useState([]);
 
-  const [reload, setReload] = useState(null)
+  const [reload, setReload] = useState(null);
 
-  const [isLoading, setisLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [scroll, setScroll] = useState(1)
-
-  const [searchFeed, setSearchFeed] = useState({
-    search: "",
-  })
-
-  const [showSearch, setShowSearch] = useState(true)
-
-  const [currentGist, setCurrentGist] = useState(undefined)
-
-  const [showNewQuestion, setShowNewQuestion] = useState(false)
-
-
-  const handleScroll = async (e) => {
-
-    const { scrollTop, clientHeight, scrollHeight } = e.target
-
-    if (scrollTop + clientHeight === scrollHeight)
-      setScroll(scroll + 1)
-
-
-      const response = await api.get("/feed", {
-        params: {
-          idPage: scroll
-        }
-      });
-
-      setQuestions([...questions, ...response.data])
-
-  }
+  const [isLoadingFeed, setIsLoadingFeed] = useState(false)
   
 
-  //
+  const [search, setSearch] = useState("")
+  const [showNewQuestion, setShowNewQuestion] = useState(false);
+
+  const [currentGist, setCurrentGist] = useState(undefined);
+
+  const [page, setPage] = useState(1)
+
+  const [totalQuestions, setTotalQuestions] = useState(0)
+
+  const feedRef = useRef();
+
+
+  const loadQuestions = async () => {
+
+    if(isLoading) return
+
+    if( totalQuestions > 0 && totalQuestions == questions.length) return
+
+    setIsLoading(true);
+    const response = await api.get("/feed", {
+      params : {
+        page
+      }
+    });
+
+    setPage(page + 1 )
+
+    setQuestions([...questions, ...response.data ]);
+    
+
+    setTotalQuestions(response.headers["x-total-count"]);
+
+    setIsLoading(false);
+  };
+
+
   useEffect(() => {
-
-    const loadQuestions = async () => {
-      setisLoading(true)
-
-
-      const response = await api.get("/feed", {
-        params: {
-          idPage: 1
-        }
-      });
-      setQuestions(response.data);
-      setisLoading(false)
-    };
-
+    
     loadQuestions();
   }, [reload]);
 
@@ -437,68 +445,84 @@ function Home() {
   };
 
   const handleReload = () => {
-    setShowNewQuestion(false)
-    setReload(Math.random())
-  }
+    setShowNewQuestion(false);
+    setIsLoading(false)
+    setPage(1)
+    setQuestions([])
+    setReload(Math.random());
+  };
 
   const handleSearch = async (e) => {
-    e.preventDefault()
-    // setIsLoading(true);
+    setSearch(e.target.value)
+
+    if(e.target.value.length === 0) handleReload()
+    
+    if(e.target.value.length < 4) return;
+
     try {
-
-      const response = await api.get("/search", {
-        params: {
-          keyWord: searchFeed.search
-        }
-      });
-      setQuestions(response.data);
-
+      const response = await api.get("/questions", {
+        params: {search: e.target.value},
+      })
+      setQuestions(response.data)
     } catch (error) {
-      alert(error);
+      alert(error)
+      console.log(error)
     }
-  };
-  const handleInputSearch = (e) => {
-    setSearchFeed({ ...searchFeed, [e.target.id]: e.target.value })
   }
+
+  const feedScrollObserver = (e) => {
+    const {scrollTop, clientHeight, scrollHeight} = e.target
+
+    if(scrollTop + clientHeight > scrollHeight -50 - 100 && search.length < 4)
+    loadQuestions()
+  }
+
   return (
     <>
       {isLoading && <Loading />}
-      {
-        <Gist gist={currentGist} handleClose={setCurrentGist} />
-      }
+
+      <Gist gist={currentGist} handleClose={setCurrentGist} />
 
       {showNewQuestion && (
-        //PASSANDO O SETISLOADING PARA O FILHO
-        <Modal title="Faça uma pergunta" handleClose={() => setShowNewQuestion(false)}>
-          <NewQuestion handleReload={handleReload} setisLoading={setisLoading} />
-
+        <Modal
+          title="Faça uma pergunta"
+          handleClose={() => setShowNewQuestion(false)}
+        >
+          <NewQuestion
+            handleReload={handleReload}
+            setIsLoading={setIsLoading}
+          />
         </Modal>
       )}
-
-
       <Container>
         <Header>
-          <Logo src={logo} onclick={handleReload} />
-          <FormSearch onSubmit={handleSearch}>
-            <SearchBar id="search" label="pesquisar" handler={handleInputSearch} required valur={searchFeed.search} />
-          </FormSearch>
+          <Logo src={logo} onClick={handleReload} />
+          <InputSearch handler={handleSearch} value={search} />
           <IconSignOut onClick={handleSignOut} />
         </Header>
         <Content>
           <ProfileContainer>
-            <Profile handleReload={handleReload} setisLoading={setisLoading} />
+            <Profile handleReload={handleReload} setIsLoading={setIsLoading} />
+            
           </ProfileContainer>
-
-          <FeedContainer onScroll={handleScroll}>
+          <FeedContainer ref={feedRef} onScroll={feedScrollObserver}>
+            {questions.length === 0 && search.length > 3 && "Nenhuma questao encontrada"}
             {questions.map((q) => (
-              <Question question={q} setisLoading={setisLoading} setCurrentGist={setCurrentGist} />
-            ))}
+              <Question
+              key={q.id}
+                question={q}
+                setIsLoading={setIsLoading}
+                setCurrentGist={setCurrentGist}
+              />
+            ))} {isLoading &&
+              <SpinnerLoading/> 
+            }
+            { totalQuestions < 0 && totalQuestions == questions.length && "Isso é tudo"}
           </FeedContainer>
-
-
           <ActionsContainer>
-            <button onClick={() => setShowNewQuestion(true)}>Fazer uma pergunta</button>
-
+            <button onClick={() => setShowNewQuestion(true)}>
+              Fazer uma pergunta
+            </button>
           </ActionsContainer>
         </Content>
       </Container>

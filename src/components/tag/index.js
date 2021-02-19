@@ -1,12 +1,12 @@
+import { Container } from "./styles";
 
-import { TagComponent } from "./styles"
-
-function Tag ({info, handleClose}) {
-    return (
-        <TagComponent>
-            {info}
-            <span onClick={handleClose}>&times;</span> 
-        </TagComponent>
-    )
+function Tag({ info, handleClose }) {
+  return (
+    <Container>
+      {info}
+      <span onClick={handleClose}>&times;</span>
+    </Container>
+  );
 }
-export default Tag
+
+export default Tag;
