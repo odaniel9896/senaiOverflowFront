@@ -1,13 +1,17 @@
-import styled from "styled-components"
+import styled from "styled-components";
 
-export const Container = styled.div `
-    width: 100%;
-    margin-top: 10px;
-    display:flex;
-    flex-direction:column;
+export const Container = styled.div`
+  width: 100%;
+  margin-top: 10px;
 
-    >label {
-        font-size:14px;
-        margin-bottom: 2px;
-    }
-`
+  display: flex;
+  flex-direction: column;
+
+  > label {
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  > select {
+  }
+`;

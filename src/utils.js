@@ -1,28 +1,25 @@
 export const validSquaredImage = (image) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
 
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+    reader.readAsDataURL(image);
 
-        reader.readAsDataURL(image);
+    reader.onload = (e) => {
+      const image = new Image();
 
-        reader.onload = (e) => {
-        const image = new Image ();
+      image.src = e.target.result;
 
-        image.src = e.target.result;
+      image.onload = () => {
+        const width = image.width;
+        const height = image.height;
 
-        image.onload = () => {
-            const width = image.width;
-
-            const height = image.height;
-
-            if( width / height > 1.1 || height / width > 1.1) {
-                return reject("A imagem não é quadrada");
-            }
-            resolve()
+        if (width / height > 1.1 || height / width > 1.1) {
+          reject("A imagem não é quadrada");
+          return;
         }
-    }
-    })
 
-    
-
-}
+        resolve();
+      };
+    };
+  });
+};

@@ -1,42 +1,42 @@
-import { Container, FormLogin, Body, Header, Button } from "./style";
-import Input from "../../components/input";
-import { Link, useHistory } from "react-router-dom";
-import { api } from "../../services/api";
 import { useState } from "react";
-import { signIn } from "../../services/security";
-import Loading from "../../components/Loading";
+import { Link, useHistory } from "react-router-dom";
 import Alert from "../../components/Alert";
+import Input from "../../components/Input";
+import Loading from "../../components/Loading";
+
+import { api } from "../../services/api";
+import { signIn } from "../../services/security";
+import { Container, FormLogin, Header, Body, Button } from "./styles";
 
 function Login() {
   const history = useHistory();
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [message, setMessage] = useState(undefined);
 
   const [login, setLogin] = useState({
     email: "",
     password: "",
   });
 
-  const [showLogin, setShowLogin] = useState(false);
-
-  const [message, setMessage] = useState(undefined)
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    {showLogin &&  (
-        <Loading/>
-    )} 
+
+    setIsLoading(true);
+
     try {
       const response = await api.post("/sessions", login);
 
       signIn(response.data);
 
-      console.log(response.data);
-
-      //Implementar a autorização
+      setIsLoading(false);
 
       history.push("/home");
     } catch (error) {
       console.error(error);
-      setMessage({title: "Ops...",  description: error.response.data.error})
+      setMessage({ title: "Ops...", description: error.response.data.error });
+      setIsLoading(false);
     }
   };
 
@@ -46,12 +46,13 @@ function Login() {
 
   return (
     <>
-    <Alert message={message} type="error" handleClose={setMessage}/>
+      <Alert message={message} type="error" handleClose={setMessage} />
+      {isLoading && <Loading />}
       <Container>
         <FormLogin onSubmit={handleSubmit}>
           <Header>
-            <h1>Bem vindo ao Senai Overflow</h1>
-            <h2>Para sua pergunta nós temos a resposta</h2>
+            <h1>BEM VINDO AO SENAIOVERFLOW</h1>
+            <h2>O SEU PORTAL DE RESPOSTAS</h2>
           </Header>
           <Body>
             <Input
@@ -70,8 +71,8 @@ function Login() {
               handler={handleInput}
               required
             />
-            <Button onClick={() => setShowLogin(true)}>Entrar</Button>
-            <Link to="/register">Ou clique aqui para se cadastrar</Link>
+            <Button>Entrar</Button>
+            <Link to="/register"> Ou clique aqui para se cadastrar</Link>
           </Body>
         </FormLogin>
       </Container>
